@@ -3,4 +3,5 @@ name = "expresser"
 version = "0.1.0"
 authors = ["Nikita Vilunov <nikitaoryol@gmail.com>"]
 
-[dependencies]
+[profile.release]
+lto = true

@@ -1,5 +1,4 @@
 use std::fs::{read_to_string, write};
-use std::io::prelude::*;
 
 mod token;
 mod ast;
@@ -23,7 +22,7 @@ fn execute(expr: &str) -> Num {
 
 fn main() {
     let test = read_input();
-    let mut output = test.lines()
+    let output = test.lines()
         .map(execute)
         .fold(String::new(), |a, i| a + &i.to_string() + "\n");
     write_output(&output);

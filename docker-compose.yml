@@ -1,0 +1,8 @@
+version: '3'
+
+services:
+  expresser:
+    image: vilunov.me/expresser:latest
+    build: .
+    volumes:
+      - ./:/app/
