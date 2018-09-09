@@ -17,12 +17,36 @@ fn write_output(str: &str) {
     write(OUTPUT, str).unwrap()
 }
 
+fn execute(expr: &str) -> Num {
+    ast::parse_tokens(token::tokenize(expr)).evaluate()
+}
+
 fn main() {
     let test = read_input();
     let mut output = test.lines()
-        .map(token::tokenize)
-        .map(ast::parse_tokens)
-        .map(|i| i.evaluate())
+        .map(execute)
         .fold(String::new(), |a, i| a + &i.to_string() + "\n");
     write_output(&output);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{execute, Num};
+    const TESTS: &[(&'static str, Num)] = &[
+        ("1>0", 1),
+        ("1<0", 0),
+        ("1=1", 1),
+        ("1=0", 0),
+        ("1+2", 3),
+        ("1+2*3", 7),
+        ("(1+2)*3", 9),
+    ];
+
+    #[test]
+    fn test() {
+        for (input, output) in TESTS {
+            println!("Evaluating {}", *input);
+            assert_eq!(*output, execute(*input));
+        }
+    }
 }
