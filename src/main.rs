@@ -8,26 +8,16 @@ type Num = i128;
 const INPUT: &'static str = "in.txt";
 const OUTPUT: &'static str = "out.txt";
 
-fn read_input() -> String {
-    read_to_string(INPUT).expect("something went wrong reading the file")
-}
-
-fn write_output(str: &str) {
-    write(OUTPUT, str).unwrap()
-}
-
-fn execute(expr: &str) -> Num {
-    ast::parse_tokens(token::tokenize(expr)).evaluate()
-}
-
 fn main() {
-    let test = read_input();
+    let test =
+        read_to_string(INPUT).expect("something went wrong reading the file");
     let output = test.lines()
-        .map(execute)
+        .map(|i| ast::parse_tokens(token::tokenize(i)).evaluate())
         .fold(String::new(), |a, i| a + &i.to_string() + "\n");
-    write_output(&output);
+    write(OUTPUT, map).unwrap()
 }
 
+/// Tests for the whole pipeline from
 #[cfg(test)]
 mod tests {
     use super::{execute, Num};
