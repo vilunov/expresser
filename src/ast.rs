@@ -1,6 +1,8 @@
 use super::Num;
 use token::{Token, TokenStream, Symbol};
 
+/// The possible operators, each represents a function on two integers returning a new integer.
+/// This is not the same as Symbol token, because it does not include the parentheses
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum Operator {
     Summation, Subtraction, Multiplication,
@@ -8,6 +10,7 @@ pub enum Operator {
 }
 
 impl Operator {
+    /// Applies the operator to two numbers and returns the result
     pub fn apply(&self, left: Num, right: Num) -> Num {
         use self::Operator::*;
         match *self {
@@ -20,6 +23,7 @@ impl Operator {
         }
     }
 
+    /// Tries to transform the Symbol token into an Operator
     fn from_symbol(symbol: Symbol) -> Option<Self> {
         use self::Symbol::*;
         use self::Operator::*;
@@ -35,9 +39,12 @@ impl Operator {
     }
 }
 
+/// An AST node representing an expression
 #[derive(PartialEq, Eq, Debug)]
 pub enum Expression {
+    /// A constant literal
     Const(Num),
+    /// Operation on two subexpressions
     Action {
         left: Box<Expression>,
         action: Operator,
@@ -46,6 +53,7 @@ pub enum Expression {
 }
 
 impl Expression {
+    /// Evaluates the expression and returns its value
     pub fn evaluate(&self) -> Num {
         use self::Expression::*;
         match *self {
@@ -56,6 +64,11 @@ impl Expression {
     }
 }
 
+/// Tries to read a primary from the token stream.
+/// A primary is either a constant literal or a subexpression wrapped in parentheses.
+///
+/// # Panics
+/// When the token stream is malformed and the parsed failed to extract a primary
 fn read_primary(stream: &mut TokenStream) -> Expression {
     let token = stream.read().unwrap();
     match token {
@@ -74,7 +87,12 @@ fn read_primary(stream: &mut TokenStream) -> Expression {
     }
 }
 
-pub fn read_relation(tokens: &mut TokenStream) -> Expression {
+/// Tries to read a relation from the token stream.
+/// A relation is two subexpressions compared with each other by one of three comparison operators.
+///
+/// # Panics
+/// When the token stream is malformed and the parsed failed to extract a relation
+fn read_relation(tokens: &mut TokenStream) -> Expression {
     let mut expr = read_term(tokens);
     fn is_relation_symbol(s: &Token) -> bool {
         if let Token::Op(s) = *s {
@@ -92,6 +110,11 @@ pub fn read_relation(tokens: &mut TokenStream) -> Expression {
     expr
 }
 
+/// Tries to read a term from the token stream.
+/// A term is a sum or a difference of two subexpressions.
+///
+/// # Panics
+/// When the token stream is malformed and the parsed failed to extract a term
 fn read_term(tokens: &mut TokenStream) -> Expression {
     let mut expr = read_factor(tokens);
     fn is_term_symbol(s: &Token) -> bool {
@@ -110,6 +133,11 @@ fn read_term(tokens: &mut TokenStream) -> Expression {
     expr
 }
 
+/// Tries to read a factor from the token stream.
+/// A factor is a multiplication of two subexpressions.
+///
+/// # Panics
+/// When the token stream is malformed and the parsed failed to extract a factor
 fn read_factor(tokens: &mut TokenStream) -> Expression {
     let mut expr = read_primary(tokens);
     fn is_factor_symbol(s: &Token) -> bool {
@@ -128,6 +156,10 @@ fn read_factor(tokens: &mut TokenStream) -> Expression {
     expr
 }
 
+/// Parses the input vector of tokens into an `Expression`
+///
+/// # Panics
+/// When the token list is malformed
 pub fn parse_tokens(tokens: Vec<Token>) -> Expression {
     let mut stream = TokenStream::new(tokens);
     let expr = read_relation(&mut stream);
@@ -135,6 +167,7 @@ pub fn parse_tokens(tokens: Vec<Token>) -> Expression {
     expr
 }
 
+/// Unit tests for the AST stage
 #[cfg(test)]
 mod tests{
     use super::Token::*;
@@ -170,7 +203,7 @@ mod tests{
         let input =
             vec![Op(LeftParenthesis), Number(2), Op(Plus), Number(4), Op(LeftParenthesis),
                  Op(Asterisk), Number(3)];
-        let expr = parse_tokens(input);
+        let _ = parse_tokens(input);
     }
 
     #[test]
@@ -178,7 +211,7 @@ mod tests{
     fn test_fail_2() {
         let input =
             vec![Number(2), Op(Plus), Number(4), Number(4), Op(Asterisk), Number(3)];
-        let expr = parse_tokens(input);
+        let _ = parse_tokens(input);
     }
 
     #[test]
@@ -186,6 +219,6 @@ mod tests{
     fn test_fail_3() {
         let input =
             vec![Number(2), Op(Plus), Number(4), Number(4), Op(Asterisk), Op(Asterisk), Number(3)];
-        let expr = parse_tokens(input);
+        let _ = parse_tokens(input);
     }
 }

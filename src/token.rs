@@ -1,5 +1,7 @@
 use super::Num;
 
+/// Any non-numeric and non-whitespace characters,
+/// currently limited to operators and parentheses
 #[derive(PartialEq, Eq, Debug, Copy, Clone)]
 pub enum Symbol {
     Plus, Minus,
@@ -31,16 +33,20 @@ pub enum Token {
     Whitespace(char),
 }
 
+/// Wrapper for the vector of tokens providing stream-like API
 pub struct TokenStream {
     tokens: Vec<Token>,
     pos: usize,
 }
 
 impl TokenStream {
+    /// Moves the cursor one token ahead
     pub fn advance(&mut self) {
         self.pos += 1;
     }
 
+    /// Looks up the token under the cursor,
+    /// returns None if the stream has finished
     pub fn read(&mut self) -> Option<Token> {
         if self.pos < self.tokens.len() {
             Some(self.tokens[self.pos])
@@ -49,12 +55,18 @@ impl TokenStream {
         }
     }
 
+    /// Creates a new stream from a vector of tokens
     pub fn new(tokens: Vec<Token>) -> Self {
         TokenStream { tokens, pos: 0 }
     }
 }
 
 
+/// Transforms the input string into a vector of tokens
+///
+/// # Panics
+///
+/// Panics on encountering incorrect characters or number literals
 pub fn tokenize(input: &str) -> Vec<Token> {
     let mut current_number: Option<Num> = None;
     let mut tokens = vec![];
@@ -97,6 +109,7 @@ pub fn tokenize(input: &str) -> Vec<Token> {
     tokens
 }
 
+/// Unit tests for the tokenizer stage
 #[cfg(test)]
 mod tests {
     use super::*;
